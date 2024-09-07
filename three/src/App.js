@@ -130,6 +130,7 @@ const App = () => {
   return (
     <div>
       <h1>Three.js Model in React, use click to interact, scroll to zoom in out, w s a d to move the ting</h1>
+      <audio src="ohskibbire.mp3" autoPlay loop />
     </div>
   );
 };
