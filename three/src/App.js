@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react';
 import * as THREE from 'three';
 import { scene } from './loadingmodel';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 const App = () => {
   useEffect(() => {
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0x87CEEB); // Set background color to sky blue
+    renderer.setClearColor(0x87CEEB); 
     document.body.appendChild(renderer.domElement);
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -18,6 +19,12 @@ const App = () => {
     scene.add(directionalLight);
 
     camera.position.z = 5;
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true; 
+    controls.dampingFactor = 0.25; 
+    controls.screenSpacePanning = false; 
+    controls.maxPolarAngle = Math.PI / 2; 
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
@@ -38,15 +45,14 @@ const App = () => {
     }
 
     function onMiddleClick(event) {
-      if (event.button === 1) { // Middle mouse button
+      if (event.button === 1) {
         raycaster.setFromCamera(mouse, camera);
 
         const intersects = raycaster.intersectObjects(scene.children, true);
 
         if (intersects.length > 0) {
           const point = intersects[0].point;
-          camera.position.set(point.x, point.y, point.z + 5); // Adjust the camera position
-          camera.lookAt(point);
+          controls.target.set(point.x, point.y, point.z);
         }
       }
     }
@@ -57,6 +63,7 @@ const App = () => {
 
     function animate() {
       requestAnimationFrame(animate);
+      controls.update();
       renderer.render(scene, camera);
     }
     animate();
