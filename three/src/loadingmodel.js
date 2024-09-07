@@ -10,4 +10,17 @@ loader.load('low_poly_simple_city/scene.gltf', function (gltf) {
     console.error(error);
 });
 
-export { scene, loader };
+const dogModelPromise = new Promise((resolve, reject) => {
+    loader.load('heart_on_pyramid_stand.glb', function (gltf) {
+        const dogModel = gltf.scene;
+        dogModel.name = 'dogModel';
+        dogModel.position.set(14, 0, 10); 
+        scene.add(dogModel);
+        resolve(dogModel);
+    }, undefined, function (error) {
+        console.error(error);
+        reject(error);
+    });
+});
+
+export { scene , dogModelPromise };
