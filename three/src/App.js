@@ -1,9 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as THREE from 'three';
-import {  scene ,dogModelPromise} from './loadingmodel'; 
+import { scene, dogModelPromise } from './loadingmodel'; 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 const App = () => {
+  const [followModel, setFollowModel] = useState(true);
+
   useEffect(() => {
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
     const renderer = new THREE.WebGLRenderer();
@@ -28,7 +30,6 @@ const App = () => {
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
-    
     let dogModel;
     dogModelPromise.then((model) => {
       dogModel = model;
@@ -55,11 +56,9 @@ const App = () => {
               dogModel.position.add(forward.multiplyScalar(-step));
               break;
             case 'a':
-              // dogModel.position.x -= step;
               dogModel.position.add(right.multiplyScalar(-step));
               break;
             case 'd':
-              // dogModel.position.x += step;
               dogModel.position.add(right.multiplyScalar(step));
               break;
             default:
@@ -89,7 +88,6 @@ const App = () => {
       window.addEventListener('keydown', onKeyDown, false);
     });
 
-
     function onMouseMove(event) {
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -110,11 +108,48 @@ const App = () => {
 
     window.addEventListener('mousemove', onMouseMove, false);
     window.addEventListener('mousedown', onMiddleClick, false);
-    // window.addEventListener('keydown', onKeyDown, false);
 
     function animate() {
       requestAnimationFrame(animate);
       controls.update();
+
+      if (followModel && dogModel) {
+        const offset = new THREE.Vector3(15, 12, 0);
+        const dogPosition = dogModel.position.clone();
+        camera.position.copy(dogPosition.add(offset));
+        camera.lookAt(dogModel.position);
+        
+        // now left and right bbay
+        // const turnoffset = new THREE.Vector3(0, 0, 0);
+        // function onKeyDown(event) {
+        //   const step = 1; 
+        //   if (dogModel) {
+        //     const forward = new THREE.Vector3();
+        //     camera.getWorldDirection(forward);
+        //     forward.normalize();
+        //     forward.y = 0;
+  
+        //     const right = new THREE.Vector3();
+        //     right.crossVectors(forward, camera.up).normalize();
+        //     right.y = 0; 
+  
+        //     switch (event.key) {
+        //       case 'a':
+        //         turnoffset.add(right.multiplyScalar(-step));
+        //         break;
+        //       case 'd':
+        //         turnoffset.add(right.multiplyScalar(step));
+        //         break;
+        //       default:
+        //         break;
+        //     }
+        //   } 
+        // }
+  
+        // window.addEventListener('keydown', onKeyDown, false);
+      
+      }
+
       renderer.render(scene, camera);
     }
     animate();
@@ -122,14 +157,21 @@ const App = () => {
     return () => {
       window.removeEventListener('mousemove', onMouseMove, false);
       window.removeEventListener('mousedown', onMiddleClick, false);
-      // window.removeEventListener('keydown', onKeyDown, false);
       document.body.removeChild(renderer.domElement);
     };
-  }, []);
+  }, [followModel]);
 
   return (
     <div>
       <h1>Three.js Model in React, use click to interact, scroll to zoom in out, w s a d to move the ting</h1>
+      <label>
+        <input 
+          type="checkbox" 
+          checked={followModel} 
+          onChange={() => setFollowModel(!followModel)} 
+        />
+        Follow Model
+      </label>
       <audio src="ohskibbire.mp3" autoPlay loop />
     </div>
   );
